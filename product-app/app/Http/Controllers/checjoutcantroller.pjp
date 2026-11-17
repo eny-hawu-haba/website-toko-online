@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+class CheckoutController extends Controller
+{
+    public function index()
+    {
+        $cart = session()->get('cart', []);
+
+        if (empty($cart)) {
+            return redirect()
+                ->route('cart.index')
+                ->with('success', 'Keranjang masih kosong.');
+        }
+
+        $total = 0;
+
+        foreach ($cart as $item) {
+            $total += $item['price'] * $item['quantity'];
+        }
+
+        return view('checkout.index', compact('cart', 'total'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'nama' => 'required',
+            'alamat' => 'required',
+            'no_hp' => 'required',
+        ]);
+
+        // Untuk sementara kita simpan data checkout ke session.
+        // Database pesanan akan kita buat setelah halaman checkout berhasil.
+
+        session()->put('checkout', [
+            'nama' => $request->nama,
+            'alamat' => $request->alamat,
+            'no_hp' => $request->no_hp,
+        ]);
+
+        return redirect()
+            ->route('checkout.index')
+            ->with('success', 'Data checkout berhasil disimpan.');
+    }
+}
